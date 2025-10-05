@@ -1,0 +1,48 @@
+# Include important documentation and configuration files
+include README.md
+include LICENSE
+include CHANGELOG.md
+include requirements.txt
+include pyproject.toml
+
+# Include package configuration
+include setup.py
+include setup.cfg
+
+# Include type information
+include keka_sdk/py.typed
+
+# Include all Python files in the package
+recursive-include keka_sdk *.py
+recursive-include keka_sdk *.pyi
+
+# Include test files (optional, for source distributions)
+recursive-include tests *.py
+
+# Include configuration files
+include .pre-commit-config.yaml
+include .gitignore
+
+# Exclude unnecessary files
+exclude .env
+exclude .env.*
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .pytest_cache
+global-exclude .coverage
+global-exclude .mypy_cache
+global-exclude .tox
+
+# Exclude development and build artifacts
+prune .git
+prune .github
+prune .vscode
+prune .idea
+prune build
+prune dist
+prune *.egg-info
