@@ -2,35 +2,47 @@ from typing import Optional, Union
 from datetime import datetime
 
 # Import all types from the centralized types module
-from keka_sdk.src.resources.HR.types import (
+from keka.src.resources.HR.types import (
     GenderType,
     EmployeeCreateResponse,
     EmployeeSearchResponse
 )
+from .... import KekaAuth
 from ....client import ApiClient
+from ....models import RemoveNone
 
 
 class Employee(ApiClient):
     __endpoint = "hr/employees"
 
-    def __init__(self, base_url: Optional[str] = None, auth_token: Optional[str] = None):
+    def __init__(self, base_url: str, auth: KekaAuth):
         super().__init__(base_url)
-        self.base_url = base_url
-        self.auth_token = auth_token
+        self._auth = auth
 
     def get_all_employees(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
     def get_employee_by_filter(
         self,
         id: Optional[str] = None,
         number: Optional[str] = None,
-        status: Optional[str] = None,
-        in_probation: bool = False,
-        in_notice_period: bool = False,
-        search_key: Optional[str] = None
+        # status: Optional[str] = None,
+        # in_probation: bool = False,
+        # in_notice_period: bool = False,
+        # search_key: Optional[str] = None
     ):
-        pass
+        request_payload = {
+            "id": id,
+            "number": number
+            # "status": status,
+            # "in_probation": in_probation,
+            # "in_notice_period": in_notice_period,
+            # "search_key": search_key
+        }
+        payload = RemoveNone(**request_payload).model_dump(exclude_none=True)
+
+        response = self.get(self.__endpoint, self._auth.headers, payload)
+        return response.json()
 
     def search_employee(
         self,
@@ -125,10 +137,20 @@ class Employee(ApiClient):
         """
         # This is a stub. Actual implementation should call the API endpoint.
         # POST /hris/employees/search
-        pass
+        # Validate input parameters
+        if not work_email and not work_phone:
+            raise ValueError("At least one of work_email or work_phone must be provided")
+
+        endpoint = f"{self.__endpoint}/search"
+        payload = RemoveNone(**{"workPhone": work_phone, "workEmail": work_email}).model_dump(exclude_none=True)
+        response = self.post(endpoint, data=payload, headers=self._auth.headers)
+        result = response.json()
+
+        return result
+
 
     def get_employee_by_id(self, id: str):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
     def create(
         self,
@@ -220,10 +242,10 @@ class Employee(ApiClient):
         """
         # This is a stub. Actual implementation should call the API endpoint.
         # POST /hris/employees
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
     def update_employee(self):
-        return NotImplemented
+        raise NotImplementedError("Subclasses must implement this method")
     
 
 
@@ -233,13 +255,13 @@ class Group:
         pass
 
     def get_all_groups(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
     def get_group_by_filter(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
     def get_group_types(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
 
 
@@ -249,17 +271,16 @@ class Department:
         pass
 
     def get_all_departments(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
     def get_department_by_filter(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
     def create_department(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
     def update_department(self):
-        return NotImplemented
-
+        raise NotImplementedError("Subclasses must implement this method")
 
 class Location:
 
@@ -267,7 +288,7 @@ class Location:
         pass
 
     def get_all_locations(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
 
 class JobTitle:
@@ -276,7 +297,7 @@ class JobTitle:
         pass
 
     def get_all_job_titles(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
 
 class Currency:
@@ -285,7 +306,7 @@ class Currency:
         pass
 
     def get_all_currencies(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
 
 class NoticePeriod:
@@ -294,7 +315,7 @@ class NoticePeriod:
         pass
 
     def get_all_notice_periods(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
 
 class ExitReason:
@@ -303,7 +324,7 @@ class ExitReason:
         pass
 
     def get_all_exit_reasons(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
 
 class EmploymentExit:
@@ -312,4 +333,4 @@ class EmploymentExit:
         pass
 
     def get_all_employment_exits(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
