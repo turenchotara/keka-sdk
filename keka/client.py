@@ -384,3 +384,22 @@ class AsyncApiClient:
 class Client:
     def __init__(self, instant_url):
         self.instant_url = instant_url
+
+
+class PageInfo:
+    def __init__(self):
+        self.total_pages = None
+        self.current_page = 1
+
+    def check_next_page(self):
+        if self.current_page == self.total_pages:
+            return False
+        else:
+            self.current_page += 1
+            return True
+
+
+def page_generator(total_pages, client_obj: ApiClient, endpoint: str, headers: dict[str, str], payload:dict[str, Any]):
+    for page in range(2, total_pages + 1):
+        response = client_obj.get(endpoint, headers=headers, params=payload)
+        yield response.json()

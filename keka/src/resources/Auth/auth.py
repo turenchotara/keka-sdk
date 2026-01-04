@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional, Union
 from urllib.parse import urljoin
 
 from ....client import ApiClient, AsyncApiClient
-from keka_sdk.utils.helpers import get_auth_headers, get_token_headers
+from keka.utils.helpers import get_auth_headers, get_token_headers
 
 logger = logging.getLogger(__name__)
 
@@ -283,12 +283,12 @@ class BaseAuth(ABC):
     __login_url = "https://login.kekademo.com/connect/token"
 
     def __init__(self, client_id: str, client_secret: str, api_key: str, scope: str = "kekaapi", grant_type: str = "kekaapi") -> None:
-        self.instant_url = self.__login_url
-        self.scope = scope
-        self.grant_type = grant_type
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.api_key = api_key
+        self._instant_url = self.__login_url
+        self._scope = scope
+        self._grant_type = grant_type
+        self._client_id = client_id
+        self._client_secret = client_secret
+        self._api_key = api_key
 
         self.__auth_token = None
 
@@ -313,8 +313,16 @@ class BaseAuth(ABC):
     def generate_auth_token(self) -> None:
         pass
 
+    @property
+    def headers(self) -> Dict[str, str]:
+        headers = {
+            "Authorization": f"Bearer {self.auth_token}",
+            "Content-Type": "application/json"
+        }
+        return headers
 
-class KekaAuth(BaseAuth, ApiClient):
+
+class KekaAuth(BaseAuth):
     """
     Keka Authentication Class
     
@@ -323,32 +331,54 @@ class KekaAuth(BaseAuth, ApiClient):
     and token-based authentication.
     """
 
+
     def __init__(self, client_id: str, client_secret: str, api_key: str, scope: str = "kekaapi", grant_type: str = "kekaapi") -> None:
-        BaseAuth.__init__(self, client_id, client_secret, api_key, scope, grant_type)
-        ApiClient.__init__(self, self.instant_url)
+        super().__init__(client_id, client_secret, api_key, scope, grant_type)
+        self._client = ApiClient(self._instant_url)
+        print("hello")
+
+    def __repr__(self) -> str:
+        return "KekaAuth()"
+
+    def __str__(self) -> str:
+        return "KekaAuth"
+
+    # def __dir__(self):
+    #     # Limit discoverable attributes/methods to a minimal public surface
+    #     public_names = {
+    #         "generate_auth_token",
+    #         "refresh_auth_token",
+    #         "auth_token",
+    #         "__class__",
+    #         "__repr__",
+    #         "__str__",
+    #     }
+    #     return sorted(public_names)
 
     def refresh_auth_token(self) -> None:
         pass
 
     def generate_auth_token(self) -> bool:
         json_data = {
-            "grant_type": self.grant_type,
-            "scope": self.scope,
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "api_key": self.api_key
+            "grant_type": self._grant_type,
+            "scope": self._scope,
+            "client_id": self._client_id,
+            "client_secret": self._client_secret,
+            "api_key": self._api_key
         }
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
         }
-        response = self.post("", data=json_data, headers=headers)
-        result = response.json()
-        if response.status_code == 200:
-            self.auth_token = result.get("access_token")
-            return True
-        else:
-            return False
+        #response = self._client.post("", data=json_data, headers=headers)
+        # result = response.json()
+        result = {'access_token': 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjFBRjQzNjk5RUE0NDlDNkNCRUU3NDZFMjhDODM5NUIyMEE0MUNFMTgiLCJ4NXQiOiJHdlEybWVwRW5HeS01MGJpaklPVnNncEJ6aGciLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2xvZ2luLmtla2FkZW1vLmNvbSIsIm5iZiI6MTc1OTc2OTAyOCwiaWF0IjoxNzU5NzY5MDI4LCJleHAiOjE3NTk4NTU0MjgsImF1ZCI6WyJrZWthYXBpIiwiaHR0cHM6Ly9sb2dpbi5rZWthZGVtby5jb20vcmVzb3VyY2VzIl0sInNjb3BlIjpbImtla2FhcGkiXSwiYW1yIjpbImtla2FhcGkiXSwiY2xpZW50X2lkIjoiZGMyNmQxMTctOWQxZC00ODZkLWI0MDQtY2EzNmM2Njc2YzViIiwic3ViIjoiOThjYWMwNDktNmEzZS00NTA5LWI3NjMtNjUzOTg4ZTllYWM2IiwiYXV0aF90aW1lIjoxNzU5NzY5MDI4LCJpZHAiOiJsb2NhbCIsInRlbmFudF9pZCI6IjVmZTkzMmQ1LTk3MjAtNGFkYi05NmI3LTQwNDdlYmQwMGE5ZCIsInRlbmFudGlkIjoiNWZlOTMyZDUtOTcyMC00YWRiLTk2YjctNDA0N2ViZDAwYTlkIiwiYXBwX25hbWUiOiJLZWthIEludGVncmF0aW9uIiwic3ViZG9tYWluIjoidHVyYWJpdC5rZWthZGVtby5jb20iLCJqdGkiOiI0MDA0QjRGRDUyMTQyNDYxMThENzYzMDkxN0I1RjdFMiJ9.FFOBi2PcAIFTdNEaFBiOReP7K09JKslQUQx2j1oFefekqsnsVpaVpiV5HAyggELdWUbhuq4TJsOC2r0u7viixil9VJ-to2l4STkeW6Ymcfo022mCZcEHvWMzZ34sKxk8ANK7nbMJAQFcav0kn5gXxp-SFEQukTOm4X9Exmj2XLg0s9Oph0SLM9K6uHik7WntEJy_N4NIjNUSVqebfDRNW1OR0y1Xjy4BoksK0b8gLpFqptcAgwf_K6-gAZQ9gpXyScVp_zwbLN8NL7q77g1k3mu0Wcjsk9i5ME4fCWgF476QP8anMHnMRyPbsTNC6SqFhYyZINONFNT7TWwl6l79Xg',
+         'expires_in': 86400, 'scope': 'kekaapi', 'token_type': 'Bearer'}
+        # if response.status_code == 200:
+        self.auth_token = result.get("access_token")
+        return True
+        # else:
+        #     return False
 
 
 class AsyncKekaAuth(BaseAuth):

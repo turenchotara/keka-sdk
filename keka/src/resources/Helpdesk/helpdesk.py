@@ -1,6 +1,7 @@
 from http.client import responses
 from typing import Optional
 
+from .... import KekaAuth
 from ....client import ApiClient
 # Import types from the Helpdesk-specific types module
 from .types import (
@@ -12,17 +13,9 @@ from ..utils.helper import check_next_page
 class TicketManagement(ApiClient):
     __endpoint = "helpdesk/tickets"
 
-    def __init__(self, base_url: str, auth_token: Optional[str] = None, headers: Optional[dict[str, str]] = None):
-        # Set up auth headers
-        if auth_token:
-            auth_headers = {"Authorization": f"Bearer {auth_token}"}
-            if headers:
-                headers.update(auth_headers)
-            else:
-                headers = auth_headers
-        
-        super().__init__(base_url, headers)
-        self.auth_token = auth_token
+    def __init__(self, base_url: str, auth: KekaAuth):
+        super().__init__(base_url)
+        self._auth = auth
 
     def get_all_tickets(self):
         response = self.get(self.__endpoint, headers=self.headers, params={})
@@ -30,25 +23,25 @@ class TicketManagement(ApiClient):
 
         return response['data']
     def get_tickets_by_filter(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
     def create(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
     def update(self):
-        return NotImplemented
-    
+        raise NotImplementedError("Subclasses must implement this method")
+
     def get_categories(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
     def create_category(self):
-        return NotImplemented
+        raise NotImplementedError("Subclasses must implement this method")
     
     def update_category(self):
-        return NotImplemented
+        raise NotImplementedError("Subclasses must implement this method")
     
     def get_closing_reasons(self):
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
     def search_employee_for_ticket(
         self,
@@ -140,7 +133,7 @@ class TicketManagement(ApiClient):
         
         # This is a stub. Actual implementation should call the API endpoint.
         # POST /hris/employees/search
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
    
     

@@ -9,7 +9,7 @@ class KekaClient:
 
     __slots__ = ('instance_url', 'hr', 'helpdesk')
 
-    def __init__(self, auth: Union[str, KekaAuth], instance_url: str):
+    def __init__(self, auth: KekaAuth, instance_url: str):
         self.instance_url = instance_url
 
         # Pass authenticated client and token to child classes

@@ -8,7 +8,7 @@ Provides authentication, HR operations, and API client functionality.
 # Import version first
 from ._version import __version__, __version_info__
 
-from keka_sdk.src import KekaClient, KekaAuth
+from keka.src import KekaClient, KekaAuth
 
 __all__ = [
     # Version information
