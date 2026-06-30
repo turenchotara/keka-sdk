@@ -7,43 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Initial package structure setup
-- Support for modern Python packaging (pyproject.toml)
-- Comprehensive installation instructions
+## [0.1.0] - 2026-06-22
 
-## [1.0.0] - 2024-01-XX
+### Changed (architecture consolidation)
+- Consolidated three competing implementations into a single composition-based design:
+  one shared transport (one connection pool) injected into the auth manager and every resource.
+- Replaced the inheritance-based resources (`Employee(ApiClient)`, `TicketManagement(ApiClient)`)
+  with `HRResource` / `HelpdeskResource` composed over `BaseResource`.
+- Unified authentication into a single `AuthManager` + `KekaAuth` credentials object; the OAuth
+  token endpoint is now derived from `instance_url` (removing the hardcoded demo host), and the
+  grant type defaults to `client_credentials`.
+- Added a typed error hierarchy: `KekaError` -> `KekaAuthError`, `KekaAPIError`,
+  `KekaRateLimitError`, `KekaNotFoundError`. The transport never returns `None`.
+- Hardened retries with jitter, a maximum backoff cap, and `Retry-After` handling on 429.
+- Merged the duplicate HR/Helpdesk type modules into a single shared `keka_sdk.types` package.
+- Moved to `pyproject.toml`-only packaging with a dynamic version; removed `setup.py`/`setup.cfg`
+  and the unused `requests` dependency.
 
-### Added
-- Initial release of Keka SDK
-- Authentication support with API key
-- Token management with automatic refresh
-- CRUD operations for Keka API
-- Automatic retry logic with exponential backoff
-- Synchronous and asynchronous client support
-- Context manager support
-- Comprehensive error handling
-- HR operations support
-- Helpdesk operations support
-- Type hints and py.typed marker
-- Documentation and examples
+### Removed
+- Orphaned `keka_sdk/hr.py` manager layer, the legacy `src/` resource tree, the duplicate auth
+  systems, and committed build artifacts.
 
-### Features
-- **Authentication**: Complete support for Keka authentication methods
-- **Token Management**: Automatic token refresh, validation, and lifecycle management
-- **CRUD Operations**: Complete support for Create, Read, Update, and Delete operations
-- **Automatic Retry Logic**: Exponential backoff for transient errors
-- **Modern HTTP Client**: Built with httpx for better performance
-- **Async Support**: Both synchronous and asynchronous clients available
-- **Configurable**: Customizable retry parameters, headers, and timeouts
-- **Clean API**: Simple and intuitive interface
+### Notes
+- Version reset to `0.x` to reflect the in-progress public surface; methods whose Keka API
+  contract is unverified raise `NotImplementedError`.
 
 ### Dependencies
 - httpx>=0.24.0
 
 ### Supported Python Versions
-- Python 3.8+
-- Python 3.9
-- Python 3.10
-- Python 3.11
-- Python 3.12
+- Python 3.8, 3.9, 3.10, 3.11, 3.12

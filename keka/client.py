@@ -1,405 +1,138 @@
-import asyncio
-import logging
-import time
-from typing import Any, Dict, Optional, Set
-from urllib.parse import urljoin
+from typing import Any, Union
 
-import httpx
+from .auth import AsyncAuthManager, AuthManager, KekaAuth
+from .config import KekaConfig
+from .resources.helpdesk import AsyncHelpdeskResource, HelpdeskResource
+from .resources.hr import AsyncHRResource, HRResource
+from .resources.hris import (
+    AsyncCurrencyResource,
+    AsyncDepartmentsResource,
+    AsyncExitReasonsResource,
+    AsyncGroupsResource,
+    AsyncJobTitlesResource,
+    AsyncLocationsResource,
+    AsyncNoticePeriodResource,
+    CurrencyResource,
+    DepartmentsResource,
+    ExitReasonsResource,
+    GroupsResource,
+    JobTitlesResource,
+    LocationsResource,
+    NoticePeriodResource,
+)
+from .resources.leave import AsyncLeaveResource, LeaveResource
+from .transport import AsyncTransport, Transport
 
-logger = logging.getLogger(__name__)
+
+def _coerce_config(config: Union[str, KekaConfig]) -> KekaConfig:
+    if isinstance(config, KekaConfig):
+        return config
+    if isinstance(config, str):
+        return KekaConfig(instance_url=config)
+    raise TypeError("config must be a KekaConfig or an instance_url string")
 
 
-class ApiClient:
+def _validate_auth(auth: KekaAuth) -> KekaAuth:
+    if not isinstance(auth, KekaAuth):
+        raise TypeError("auth must be a KekaAuth instance")
+    return auth
+
+
+class KekaClient:
     """
-    A basic API client with CRUD operations and automatic retry logic.
+    Synchronous Keka client.
 
-    Supports GET, POST, PATCH/PUT, and DELETE operations with exponential backoff
-    for transient errors (timeouts, 5xx, and 429 responses).
+    Args:
+        auth: Credentials (:class:`KekaAuth`).
+        config: A :class:`KekaConfig`, or an ``instance_url`` string.
+
+    Example:
+        >>> auth = KekaAuth(client_id="...", client_secret="...", api_key="...")
+        >>> with KekaClient(auth, "https://acme.keka.com") as client:
+        ...     result = client.hr.search_employee(work_email="a@acme.com")
     """
 
-    def __init__(
-            self,
-            base_url: str,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: float = 30.0,
-            max_retries: int = 3,
-            retry_delay: float = 1.0,
-            backoff_factor: float = 2.0,
-            retry_status_codes: Optional[Set[int]] = None
-    ):
-        """
-        Initialize the API client.
+    def __init__(self, auth: KekaAuth, config: Union[str, KekaConfig]):
+        self._auth_credentials = _validate_auth(auth)
+        self.config = _coerce_config(config)
+        self.transport = Transport(self.config)
+        self.auth = AuthManager(self._auth_credentials, self.config, self.transport)
 
-        Args:
-            base_url: The base URL for all API requests
-            headers: Default headers to include in all requests
-            timeout: Request timeout in seconds
-            max_retries: Maximum number of retry attempts
-            retry_delay: Initial delay between retries in seconds
-            backoff_factor: Multiplier for exponential backoff
-            retry_status_codes: Set of status codes to retry on
-        """
-        self.base_url = base_url.rstrip('/')
-        self.headers = headers or {}
-        self.timeout = timeout
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
-        self.backoff_factor = backoff_factor
-        self.retry_status_codes = retry_status_codes or {429, 500, 502, 503, 504}
+        # Core resources
+        self.hr = HRResource(self.transport, self.config, self.auth)
+        self.helpdesk = HelpdeskResource(self.transport, self.config, self.auth)
 
-        # Initialize HTTP client
-        self.client = httpx.Client(
-            timeout=timeout,
-            headers=self.headers
-        )
+        # HRIS lookup resources
+        self.groups = GroupsResource(self.transport, self.config, self.auth)
+        self.departments = DepartmentsResource(self.transport, self.config, self.auth)
+        self.locations = LocationsResource(self.transport, self.config, self.auth)
+        self.job_titles = JobTitlesResource(self.transport, self.config, self.auth)
+        self.currencies = CurrencyResource(self.transport, self.config, self.auth)
+        self.notice_periods = NoticePeriodResource(self.transport, self.config, self.auth)
+        self.exit_reasons = ExitReasonsResource(self.transport, self.config, self.auth)
 
-    def _build_url(self, endpoint: str) -> str:
-        """Build full URL from endpoint."""
-        return urljoin(self.base_url + '/', endpoint.lstrip('/'))
+        # Leave management resource
+        self.leave = LeaveResource(self.transport, self.config, self.auth)
 
-    def _should_retry(self, response: httpx.Response, exception: Optional[Exception] = None) -> bool:
-        """Determine if a request should be retried."""
-        if exception:
-            # Retry on connection errors, timeouts, etc.
-            return True
+    @property
+    def instance_url(self) -> str:
+        return self.config.instance_url
 
-        if response.status_code in self.retry_status_codes:
-            return True
+    def authenticate(self) -> str:
+        """Eagerly acquire an access token and return it."""
+        return self.auth.authenticate()
 
-        return False
+    def close(self) -> None:
+        self.transport.close()
 
-    def _make_request(
-            self,
-            method: str,
-            endpoint: str,
-            data: Optional[Dict[str, Any]] = None,
-            json: Optional[Dict[str, Any]] = None,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response | None:
-        """
-        Make an HTTP request with retry logic.
-
-        Args:
-            method: HTTP method (GET, POST, PATCH, PUT, DELETE)
-            endpoint: API endpoint
-            data: Request body data
-            params: Query parameters
-            headers: Additional headers for this request
-
-        Returns:
-            httpx.Response object
-
-        Raises:
-            httpx.HTTPError: If all retries are exhausted
-        """
-        url = self._build_url(endpoint).strip("/")
-        request_headers = {**self.headers, **(headers or {})}
-
-        for attempt in range(self.max_retries + 1):
-            try:
-                response = self.client.request(
-                    method=method,
-                    url=url,
-                    json=json,
-                    data=data,
-                    params=params,
-                    headers=request_headers
-                )
-
-                # Check if we should retry
-                if self._should_retry(response):
-                    if attempt < self.max_retries:
-                        delay = self.retry_delay * (self.backoff_factor ** attempt)
-                        logger.warning(
-                            f"Request failed (attempt {attempt + 1}/{self.max_retries + 1}). "
-                            f"Status: {response.status_code}. Retrying in {delay:.2f}s..."
-                        )
-                        time.sleep(delay)
-                        continue
-                    else:
-                        logger.error(f"Request failed after {self.max_retries + 1} attempts")
-
-                return response
-
-            except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPError) as e:
-                if attempt < self.max_retries:
-                    delay = self.retry_delay * (self.backoff_factor ** attempt)
-                    logger.warning(
-                        f"Request failed with exception (attempt {attempt + 1}/{self.max_retries + 1}): "
-                        f"{type(e).__name__}. Retrying in {delay:.2f}s..."
-                    )
-                    time.sleep(delay)
-                    continue
-                else:
-                    logger.error(f"Request failed after {self.max_retries + 1} attempts")
-                    raise
-        return None
-
-    def get(
-            self,
-            endpoint: str,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform a GET request."""
-        return self._make_request('GET', endpoint, params=params, headers=headers)
-
-    def post(
-            self,
-            endpoint: str,
-            data: Optional[Dict[str, Any]] = None,
-            json: Optional[Dict[str, Any]] = None,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform a POST request."""
-        return self._make_request('POST', endpoint, data=data, json=json, params=params, headers=headers)
-
-    def put(
-            self,
-            endpoint: str,
-            data: Optional[Dict[str, Any]] = None,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform a PUT request."""
-        return self._make_request('PUT', endpoint, data=data, params=params, headers=headers)
-
-    def patch(
-            self,
-            endpoint: str,
-            data: Optional[Dict[str, Any]] = None,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform a PATCH request."""
-        return self._make_request('PATCH', endpoint, data=data, params=params, headers=headers)
-
-    def delete(
-            self,
-            endpoint: str,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform a DELETE request."""
-        return self._make_request('DELETE', endpoint, params=params, headers=headers)
-
-    def close(self):
-        """Close the HTTP client."""
-        self.client.close()
-
-    def __enter__(self):
+    def __enter__(self) -> "KekaClient":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         self.close()
 
 
-class AsyncApiClient:
+class AsyncKekaClient:
     """
-    An async API client with CRUD operations and automatic retry logic.
-
-    Supports GET, POST, PATCH/PUT, and DELETE operations with exponential backoff
-    for transient errors (timeouts, 5xx, and 429 responses).
+    Asynchronous Keka client. See :class:`KekaClient` for usage; use
+    ``async with`` and ``await`` on resource methods.
     """
 
-    def __init__(
-            self,
-            base_url: str,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: float = 30.0,
-            max_retries: int = 3,
-            retry_delay: float = 1.0,
-            backoff_factor: float = 2.0,
-            retry_status_codes: Optional[Set[int]] = None
-    ):
-        """
-        Initialize the async API client.
+    def __init__(self, auth: KekaAuth, config: Union[str, KekaConfig]):
+        self._auth_credentials = _validate_auth(auth)
+        self.config = _coerce_config(config)
+        self.transport = AsyncTransport(self.config)
+        self.auth = AsyncAuthManager(self._auth_credentials, self.config, self.transport)
 
-        Args:
-            base_url: The base URL for all API requests
-            headers: Default headers to include in all requests
-            timeout: Request timeout in seconds
-            max_retries: Maximum number of retry attempts
-            retry_delay: Initial delay between retries in seconds
-            backoff_factor: Multiplier for exponential backoff
-            retry_status_codes: Set of status codes to retry on
-        """
-        self.base_url = base_url.rstrip('/')
-        self.headers = headers or {}
-        self.timeout = timeout
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
-        self.backoff_factor = backoff_factor
-        self.retry_status_codes = retry_status_codes or {429, 500, 502, 503, 504}
+        # Core resources
+        self.hr = AsyncHRResource(self.transport, self.config, self.auth)
+        self.helpdesk = AsyncHelpdeskResource(self.transport, self.config, self.auth)
 
-        # Initialize async HTTP client
-        self.client = httpx.AsyncClient(
-            timeout=timeout,
-            headers=self.headers
-        )
+        # HRIS lookup resources
+        self.groups = AsyncGroupsResource(self.transport, self.config, self.auth)
+        self.departments = AsyncDepartmentsResource(self.transport, self.config, self.auth)
+        self.locations = AsyncLocationsResource(self.transport, self.config, self.auth)
+        self.job_titles = AsyncJobTitlesResource(self.transport, self.config, self.auth)
+        self.currencies = AsyncCurrencyResource(self.transport, self.config, self.auth)
+        self.notice_periods = AsyncNoticePeriodResource(self.transport, self.config, self.auth)
+        self.exit_reasons = AsyncExitReasonsResource(self.transport, self.config, self.auth)
 
-    def _build_url(self, endpoint: str) -> str:
-        """Build full URL from endpoint."""
-        return urljoin(self.base_url + '/', endpoint.lstrip('/'))
+        # Leave management resource
+        self.leave = AsyncLeaveResource(self.transport, self.config, self.auth)
 
-    def _should_retry(self, response: httpx.Response, exception: Optional[Exception] = None) -> bool:
-        """Determine if a request should be retried."""
-        if exception:
-            # Retry on connection errors, timeouts, etc.
-            return True
+    @property
+    def instance_url(self) -> str:
+        return self.config.instance_url
 
-        if response.status_code in self.retry_status_codes:
-            return True
+    async def authenticate(self) -> str:
+        """Eagerly acquire an access token and return it."""
+        return await self.auth.authenticate()
 
-        return False
+    async def close(self) -> None:
+        await self.transport.close()
 
-    async def _make_request(
-            self,
-            method: str,
-            endpoint: str,
-            data: Optional[Dict[str, Any]] = None,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response | None:
-        """
-        Make an async HTTP request with retry logic.
-
-        Args:
-            method: HTTP method (GET, POST, PATCH, PUT, DELETE)
-            endpoint: API endpoint
-            data: Request body data
-            params: Query parameters
-            headers: Additional headers for this request
-
-        Returns:
-            httpx.Response object
-
-        Raises:
-            httpx.HTTPError: If all retries are exhausted
-        """
-        url = self._build_url(endpoint)
-        request_headers = {**self.headers, **(headers or {})}
-
-        for attempt in range(self.max_retries + 1):
-            try:
-                response = await self.client.request(
-                    method=method,
-                    url=url,
-                    json=data,
-                    params=params,
-                    headers=request_headers
-                )
-
-                # Check if we should retry
-                if self._should_retry(response):
-                    if attempt < self.max_retries:
-                        delay = self.retry_delay * (self.backoff_factor ** attempt)
-                        logger.warning(
-                            f"Request failed (attempt {attempt + 1}/{self.max_retries + 1}). "
-                            f"Status: {response.status_code}. Retrying in {delay:.2f}s..."
-                        )
-                        await asyncio.sleep(delay)
-                        continue
-                    else:
-                        logger.error(f"Request failed after {self.max_retries + 1} attempts")
-
-                return response
-
-            except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPError) as e:
-                if attempt < self.max_retries:
-                    delay = self.retry_delay * (self.backoff_factor ** attempt)
-                    logger.warning(
-                        f"Request failed with exception (attempt {attempt + 1}/{self.max_retries + 1}): "
-                        f"{type(e).__name__}. Retrying in {delay:.2f}s..."
-                    )
-                    await asyncio.sleep(delay)
-                    continue
-                else:
-                    logger.error(f"Request failed after {self.max_retries + 1} attempts")
-                    raise
-        return None
-
-    async def get(
-            self,
-            endpoint: str,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform an async GET request."""
-        return await self._make_request('GET', endpoint, params=params, headers=headers)
-
-    async def post(
-            self,
-            endpoint: str,
-            data: Optional[Dict[str, Any]] = None,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform an async POST request."""
-        return await self._make_request('POST', endpoint, data=data, params=params, headers=headers)
-
-    async def put(
-            self,
-            endpoint: str,
-            data: Optional[Dict[str, Any]] = None,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform an async PUT request."""
-        return await self._make_request('PUT', endpoint, data=data, params=params, headers=headers)
-
-    async def patch(
-            self,
-            endpoint: str,
-            data: Optional[Dict[str, Any]] = None,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform an async PATCH request."""
-        return await self._make_request('PATCH', endpoint, data=data, params=params, headers=headers)
-
-    async def delete(
-            self,
-            endpoint: str,
-            params: Optional[Dict[str, Any]] = None,
-            headers: Optional[Dict[str, str]] = None
-    ) -> httpx.Response:
-        """Perform an async DELETE request."""
-        return await self._make_request('DELETE', endpoint, params=params, headers=headers)
-
-    async def close(self):
-        """Close the async HTTP client."""
-        await self.client.aclose()
-
-    async def __aenter__(self):
+    async def __aenter__(self) -> "AsyncKekaClient":
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         await self.close()
-
-
-# Legacy Client class for backward compatibility
-class Client:
-    def __init__(self, instant_url):
-        self.instant_url = instant_url
-
-
-class PageInfo:
-    def __init__(self):
-        self.total_pages = None
-        self.current_page = 1
-
-    def check_next_page(self):
-        if self.current_page == self.total_pages:
-            return False
-        else:
-            self.current_page += 1
-            return True
-
-
-def page_generator(total_pages, client_obj: ApiClient, endpoint: str, headers: dict[str, str], payload:dict[str, Any]):
-    for page in range(2, total_pages + 1):
-        response = client_obj.get(endpoint, headers=headers, params=payload)
-        yield response.json()

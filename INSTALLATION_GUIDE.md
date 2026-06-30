@@ -22,12 +22,6 @@ pip install -e .
 ```bash
 # Install with development tools
 pip install -e .[dev]
-
-# Install with documentation tools
-pip install -e .[docs]
-
-# Install with both dev and docs
-pip install -e .[dev,docs]
 ```
 
 ## Verification
@@ -39,9 +33,9 @@ After installation, verify the package works:
 import keka_sdk
 print(f"Keka SDK version: {keka_sdk.__version__}")
 
-# Test API clients
-from keka_sdk import ApiClient, AsyncApiClient
-print("API clients imported successfully!")
+# Test client + auth imports
+from keka_sdk import KekaClient, AsyncKekaClient, KekaAuth, KekaConfig
+print("Clients imported successfully!")
 
 # Test dependency
 import httpx
@@ -53,14 +47,14 @@ print(f"httpx version: {httpx.__version__}")
 The package includes:
 
 - **Main Components**:
-  - `ApiClient` and `AsyncApiClient` - HTTP clients with retry logic
-  - `KekaAuthenticator` - Authentication management
-  - `HRClient` and `AsyncHRClient` - HR operations
-  - Authentication, HR, and Helpdesk modules
+  - `KekaClient` / `AsyncKekaClient` - client facades exposing `.hr` and `.helpdesk`
+  - `KekaConfig` - instance URL, timeouts, and retry policy
+  - `KekaAuth` + `AuthManager` - single authentication system
+  - `transport` - one shared sync/async HTTP transport
+  - `KekaError` (+ subclasses) - typed error hierarchy
 
 - **Configuration Files**:
-  - `setup.py` - Package setup script
-  - `pyproject.toml` - Modern Python packaging configuration
+  - `pyproject.toml` - packaging configuration (single source of truth)
   - `requirements.txt` - Dependencies list
   - `MANIFEST.in` - Package file inclusion rules
 
@@ -111,8 +105,8 @@ The package version is defined in `keka_sdk/_version.py` and should be automatic
 
 ## Next Steps
 
-- Customize the package metadata in `setup.py` and `pyproject.toml`
+- Customize the package metadata in `pyproject.toml`
 - Update the repository URLs and author information
-- Add tests in a `tests/` directory
-- Set up continuous integration
+- Extend the test suite under `tests/`
+- Continuous integration is configured in `.github/workflows/ci.yml`
 - Publish to PyPI when ready

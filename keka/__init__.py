@@ -1,36 +1,32 @@
-"""
-Keka SDK
-
-A Python SDK for interacting with the Keka HR API.
-Provides authentication, HR operations, and API client functionality.
-"""
-
-# Import version first
 from ._version import __version__, __version_info__
-
-from keka.src import KekaClient, KekaAuth
+from .auth import AsyncAuthManager, AuthManager, KekaAuth
+from .client import AsyncKekaClient, KekaClient
+from .config import KekaConfig
+from .exceptions import (
+    KekaAPIError,
+    KekaAuthError,
+    KekaError,
+    KekaNotFoundError,
+    KekaRateLimitError,
+)
 
 __all__ = [
-    # Version information
+    # Version
     "__version__",
     "__version_info__",
-    
-    # Authentication
-    # "KekaAuthenticator",
-    # "AsyncKekaAuthenticator",
-    # "TokenManager",
-    # "KekaAuthError",
-    # "create_authenticator",
-    
-    # API Clients
-    # "ApiClient",
-    # "AsyncApiClient",
-    
-    # HR Operations
-    # "HRClient",
-    # "AsyncHRClient",
-
-    # main client
+    # Clients
     "KekaClient",
+    "AsyncKekaClient",
+    # Config
+    "KekaConfig",
+    # Auth
     "KekaAuth",
+    "AuthManager",
+    "AsyncAuthManager",
+    # Errors
+    "KekaError",
+    "KekaAuthError",
+    "KekaAPIError",
+    "KekaRateLimitError",
+    "KekaNotFoundError",
 ]

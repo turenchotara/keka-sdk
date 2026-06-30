@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "keka-sdk"
-version = "1.0.0"
+dynamic = ["version"]
 description = "A Python SDK for interacting with the Keka HR API"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Turen Chotara", email = "turenchotara7@gmail.com"}
 ]
 maintainers = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Turen Chotara", email = "turenchotara7@gmail.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -49,6 +49,7 @@ dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0.0",
+    "respx>=0.20.0",
     "black>=23.0.0",
     "flake8>=6.0.0",
     "mypy>=1.0.0",
@@ -61,18 +62,21 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/keka-sdk"
+Homepage = "https://github.com/turenchotara/keka-sdk"
 Documentation = "https://developers.keka.com/reference"
-Repository = "https://github.com/yourusername/keka-sdk"
-"Bug Reports" = "https://github.com/yourusername/keka-sdk/issues"
-Changelog = "https://github.com/yourusername/keka-sdk/blob/main/CHANGELOG.md"
+Repository = "https://github.com/turenchotara/keka-sdk"
+"Bug Reports" = "https://github.com/turenchotara/keka-sdk/issues"
+Changelog = "https://github.com/turenchotara/keka-sdk/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
-packages = {find = {}}
 include-package-data = true
 
-# [tool.setuptools.dynamic]
-# version = {attr = "keka_sdk.__version__"}
+[tool.setuptools.packages.find]
+include = ["keka_sdk*"]
+exclude = ["tests*", "build*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "keka_sdk._version.__version__"}
 
 [tool.setuptools.package-data]
 keka_sdk = ["py.typed"]
@@ -102,7 +106,7 @@ line_length = 88
 known_first_party = ["keka_sdk"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -119,6 +123,7 @@ strict_equality = true
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --strict-markers --strict-config"
+asyncio_mode = "auto"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
