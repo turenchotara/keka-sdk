@@ -1,0 +1,8 @@
+See AGENTS.md at the repo root for the authoritative agent guide and target architecture.
+Read it before adding or refactoring code.
+
+Key rules: one shared httpx transport injected into every resource and the auth manager;
+composition over inheritance (no resource subclasses the HTTP client); a single AuthManager
+with no hardcoded URLs; typed return contracts (never leak raw httpx.Response); a KekaError
+exception hierarchy. Do NOT extend legacy paths (keka_sdk/hr.py, inheritance resources, dual
+auth systems, duplicated types/transport).
