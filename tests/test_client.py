@@ -73,12 +73,10 @@ def test_get_employee_not_found_maps_to_typed_error():
             client.hr.get_employee("missing")
 
 
-def test_unverified_methods_raise_not_implemented():
+def test_create_employee_requires_mandatory_arguments():
     with KekaClient(_auth(), BASE) as client:
-        with pytest.raises(NotImplementedError):
-            client.hr.create_employee(first_name="A")
-        with pytest.raises(NotImplementedError):
-            client.helpdesk.create_ticket(subject="x")
+        with pytest.raises(TypeError):
+            client.hr.create_employee(first_name="A")  # type: ignore[call-arg]
 
 
 @respx.mock

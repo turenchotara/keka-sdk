@@ -16,21 +16,6 @@ def read_readme():
     except FileNotFoundError:
         return "Keka SDK - A Python SDK for interacting with the Keka HR API"
 
-# Read requirements
-def read_requirements():
-    """Read requirements.txt file"""
-    requirements_path = os.path.join(os.path.dirname(__file__), 'requirements.txt')
-    try:
-        with open(requirements_path, 'r', encoding='utf-8') as f:
-            requirements = []
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#'):
-                    requirements.append(line)
-            return requirements if requirements else ['httpx>=0.24.0']
-    except FileNotFoundError:
-        return ['httpx>=0.24.0']
-
 # Read version from __init__.py
 def get_version():
     """Extract version from keka_sdk/__init__.py"""

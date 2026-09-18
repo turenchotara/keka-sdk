@@ -743,6 +743,209 @@ class TicketUpdateResponse(BaseKekaResponse, total=False):
     data: Optional[bool]
 
 
+ApprovalStatusEnum = Literal[0, 1, 2, 3]
+"""0: Pending, 1: Approved, 2: Rejected, 3: Cancelled."""
+
+AttendanceLogSourceEnum = Literal[0, 1, 2, 3, 4]
+"""0: WebClockIn, 1: Biometric, 2: MobileApp, 3: API, 4: Manual."""
+
+
+class AttendanceRecord(TypedDict, total=False):
+    """Attendance record entity from GET /time/attendance."""
+
+    id: Optional[str]
+    employeeId: Optional[str]
+    employeeNumber: Optional[str]
+    attendanceDate: Optional[str]
+    originalClockIn: Optional[str]
+    originalClockOut: Optional[str]
+    effectiveClockIn: Optional[str]
+    effectiveClockOut: Optional[str]
+    totalEffectiveHours: Optional[float]
+    totalGrossHours: Optional[float]
+    totalBreakHours: Optional[float]
+    status: Optional[int]
+    webClockIn: Optional[bool]
+    webClockOut: Optional[bool]
+    overTimeInMins: Optional[float]
+    attendanceLogSource: Optional[AttendanceLogSourceEnum]
+
+
+class CaptureScheme(TypedDict, total=False):
+    """Capture scheme entity from GET /time/capturescheme."""
+
+    id: Optional[str]
+    name: Optional[str]
+
+
+class ShiftPolicy(TypedDict, total=False):
+    """Shift policy entity from GET /time/shiftpolicies."""
+
+    id: Optional[str]
+    name: Optional[str]
+
+
+class TrackingPolicy(TypedDict, total=False):
+    """Tracking/penalisation policy entity from GET /time/penalisationpolicies."""
+
+    id: Optional[str]
+    name: Optional[str]
+
+
+class WeeklyOffPolicy(TypedDict, total=False):
+    """Weekly off policy entity from GET /time/weeklyoffpolicies."""
+
+    id: Optional[str]
+    name: Optional[str]
+
+
+class HolidayCalendar(TypedDict, total=False):
+    """Holiday calendar entity from GET /time/holidayscalendar."""
+
+    id: Optional[str]
+    name: Optional[str]
+
+
+class Holiday(TypedDict, total=False):
+    """Holiday entity from GET /time/holidayscalendar/{calendarId}/holidays."""
+
+    id: Optional[str]
+    name: Optional[str]
+    date: Optional[str]
+    isOptional: Optional[bool]
+
+
+class OnDutyRequest(TypedDict, total=False):
+    """On-duty request entity from GET /time/od."""
+
+    id: Optional[str]
+    employeeId: Optional[str]
+    fromDate: Optional[str]
+    toDate: Optional[str]
+    note: Optional[str]
+    status: Optional[ApprovalStatusEnum]
+    requestedOn: Optional[str]
+
+
+class WfhRequest(TypedDict, total=False):
+    """Work-from-home request entity from GET /time/wfh."""
+
+    id: Optional[str]
+    employeeId: Optional[str]
+    fromDate: Optional[str]
+    toDate: Optional[str]
+    note: Optional[str]
+    status: Optional[ApprovalStatusEnum]
+    requestedOn: Optional[str]
+
+
+# Attendance Request Types
+
+class TimeEntryCreateRequest(TypedDict, total=False):
+    """Request body for POST /attendance/employee/timeentry."""
+
+    employeeId: Optional[str]
+    timestamp: Optional[str]
+    note: Optional[str]
+
+
+class OnDutyCreateRequest(TypedDict, total=False):
+    """Request body for POST /time/od."""
+
+    employeeId: Optional[str]
+    fromDate: Optional[str]
+    toDate: Optional[str]
+    fromSession: Optional[SessionType]
+    toSession: Optional[SessionType]
+    note: Optional[str]
+
+
+class WfhCreateRequest(TypedDict, total=False):
+    """Request body for POST /time/wfh."""
+
+    employeeId: Optional[str]
+    fromDate: Optional[str]
+    toDate: Optional[str]
+    fromSession: Optional[SessionType]
+    toSession: Optional[SessionType]
+    note: Optional[str]
+
+
+class ApprovalStatusUpdateRequest(TypedDict, total=False):
+    """Request body for PUT /time/{od|wfh}/{requestId}/status."""
+
+    status: Optional[ApprovalStatusEnum]
+    note: Optional[str]
+
+
+# Attendance Response Types
+
+class AttendanceRecordPagedResponse(BasePaginatedResponse, total=False):
+    """Paginated response for GET /time/attendance."""
+
+    data: Optional[List[AttendanceRecord]]
+
+
+class CaptureSchemePagedResponse(BasePaginatedResponse, total=False):
+    """Paginated response for GET /time/capturescheme."""
+
+    data: Optional[List[CaptureScheme]]
+
+
+class ShiftPolicyPagedResponse(BasePaginatedResponse, total=False):
+    """Paginated response for GET /time/shiftpolicies."""
+
+    data: Optional[List[ShiftPolicy]]
+
+
+class TrackingPolicyPagedResponse(BasePaginatedResponse, total=False):
+    """Paginated response for GET /time/penalisationpolicies."""
+
+    data: Optional[List[TrackingPolicy]]
+
+
+class WeeklyOffPolicyPagedResponse(BasePaginatedResponse, total=False):
+    """Paginated response for GET /time/weeklyoffpolicies."""
+
+    data: Optional[List[WeeklyOffPolicy]]
+
+
+class HolidayCalendarPagedResponse(BasePaginatedResponse, total=False):
+    """Paginated response for GET /time/holidayscalendar."""
+
+    data: Optional[List[HolidayCalendar]]
+
+
+class HolidayPagedResponse(BasePaginatedResponse, total=False):
+    """Paginated response for GET /time/holidayscalendar/{calendarId}/holidays."""
+
+    data: Optional[List[Holiday]]
+
+
+class OnDutyPagedResponse(BasePaginatedResponse, total=False):
+    """Paginated response for GET /time/od."""
+
+    data: Optional[List[OnDutyRequest]]
+
+
+class WfhPagedResponse(BasePaginatedResponse, total=False):
+    """Paginated response for GET /time/wfh."""
+
+    data: Optional[List[WfhRequest]]
+
+
+class TimeEntryCreateResponse(BaseKekaResponse, total=False):
+    """Response for POST /attendance/employee/timeentry."""
+
+    data: Optional[str]
+
+
+class ApprovalStatusUpdateResponse(BaseKekaResponse, total=False):
+    """Response for PUT /time/{od|wfh}/{requestId}/status."""
+
+    data: Optional[bool]
+
+
 # =============================================================================
 # LEGACY COMPATIBILITY
 # =============================================================================
@@ -758,6 +961,7 @@ __all__ = [
     "ExitStatusEnum", "ExitTypeEnum", "RelationTypeEnum", "SystemGroupTypeEnum",
     "SessionType", "LeaveRequestStatusEnum", "TimeDurationEnum",
     "TicketStatusEnum", "TicketPriorityEnum",
+    "ApprovalStatusEnum", "AttendanceLogSourceEnum",
     # Basic Structures
     "LookupInfo", "EmployeeLookup", "Image", "ContingentType", "Address",
     "CustomField", "Relation", "Education", "Experience", "GroupLookup",
@@ -772,6 +976,10 @@ __all__ = [
     "EmployeeLeaveBalance", "LeaveType", "LeavePlan",
     # Helpdesk Entities
     "Ticket", "TicketCategory", "TicketClosingReason",
+    # Attendance Entities
+    "AttendanceRecord", "CaptureScheme", "ShiftPolicy", "TrackingPolicy",
+    "WeeklyOffPolicy", "HolidayCalendar", "Holiday",
+    "OnDutyRequest", "WfhRequest",
     # Employee Requests
     "EmployeeCreateRequest", "EmployeeSearchRequest", "EmployeeExitRequest",
     "EmployeeJobDetailsUpdateRequest", "EmployeePersonalDetailsUpdateRequest",
@@ -779,6 +987,9 @@ __all__ = [
     "LeaveRequestCreateRequest",
     # Helpdesk Requests
     "TicketCreateRequest", "TicketUpdateRequest",
+    # Attendance Requests
+    "TimeEntryCreateRequest", "OnDutyCreateRequest", "WfhCreateRequest",
+    "ApprovalStatusUpdateRequest",
     # Base Responses
     "BaseKekaResponse", "BasePaginatedResponse", "BooleanResponse",
     # Employee Responses
@@ -794,6 +1005,12 @@ __all__ = [
     # Helpdesk Paged Responses
     "TicketPagedResponse", "TicketCategoryPagedResponse",
     "TicketClosingReasonPagedResponse", "TicketCreateResponse", "TicketUpdateResponse",
+    # Attendance Paged Responses
+    "AttendanceRecordPagedResponse", "CaptureSchemePagedResponse",
+    "ShiftPolicyPagedResponse", "TrackingPolicyPagedResponse",
+    "WeeklyOffPolicyPagedResponse", "HolidayCalendarPagedResponse",
+    "HolidayPagedResponse", "OnDutyPagedResponse", "WfhPagedResponse",
+    "TimeEntryCreateResponse", "ApprovalStatusUpdateResponse",
     # Legacy
     "KekaResponse",
 ]

@@ -4,10 +4,6 @@ from ..types import SessionType
 from .base import AsyncBaseResource, BaseResource
 
 
-# =============================================================================
-# PARAMETER BUILDERS
-# =============================================================================
-
 def _build_leave_balance_params(
     employee_ids: Optional[str] = None,
     leave_type_ids: Optional[str] = None,
@@ -90,10 +86,6 @@ def _build_leave_request_body(
         body["note"] = note
     return body
 
-
-# =============================================================================
-# LEAVE RESOURCE
-# =============================================================================
 
 class LeaveResource(BaseResource):
     """Synchronous Leave resource for leave management operations."""

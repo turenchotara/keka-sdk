@@ -2,6 +2,7 @@ from typing import Any, Union
 
 from .auth import AsyncAuthManager, AuthManager, KekaAuth
 from .config import KekaConfig
+from .resources.attendance import AsyncAttendanceResource, AttendanceResource
 from .resources.helpdesk import AsyncHelpdeskResource, HelpdeskResource
 from .resources.hr import AsyncHRResource, HRResource
 from .resources.hris import (
@@ -74,6 +75,9 @@ class KekaClient:
         # Leave management resource
         self.leave = LeaveResource(self.transport, self.config, self.auth)
 
+        # Attendance management resource
+        self.attendance = AttendanceResource(self.transport, self.config, self.auth)
+
     @property
     def instance_url(self) -> str:
         return self.config.instance_url
@@ -119,6 +123,9 @@ class AsyncKekaClient:
 
         # Leave management resource
         self.leave = AsyncLeaveResource(self.transport, self.config, self.auth)
+
+        # Attendance management resource
+        self.attendance = AsyncAttendanceResource(self.transport, self.config, self.auth)
 
     @property
     def instance_url(self) -> str:

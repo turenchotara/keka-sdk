@@ -55,7 +55,6 @@ The package includes:
 
 - **Configuration Files**:
   - `pyproject.toml` - packaging configuration (single source of truth)
-  - `requirements.txt` - Dependencies list
   - `MANIFEST.in` - Package file inclusion rules
 
 - **Documentation**:

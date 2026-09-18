@@ -72,14 +72,13 @@ Changelog = "https://github.com/turenchotara/keka-sdk/blob/main/CHANGELOG.md"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["keka_sdk*"]
-exclude = ["tests*", "build*"]
+include = ["keka*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "keka_sdk._version.__version__"}
+version = {attr = "keka._version.__version__"}
 
 [tool.setuptools.package-data]
-keka_sdk = ["py.typed"]
+keka = ["py.typed"]
 
 [tool.black]
 line-length = 88

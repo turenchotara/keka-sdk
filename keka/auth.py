@@ -118,7 +118,8 @@ class AuthManager(_TokenState):
                 f"Authentication failed: {response.status_code}{detail}"
             )
         self._store_token(response.json())
-        assert self._access_token is not None
+        if not self._access_token:
+            raise KekaAuthError("Authentication succeeded but access token is empty")
         return self._access_token
 
     def ensure_token(self) -> str:
@@ -158,7 +159,8 @@ class AsyncAuthManager(_TokenState):
                 f"Authentication failed: {response.status_code}{detail}"
             )
         self._store_token(response.json())
-        assert self._access_token is not None
+        if not self._access_token:
+            raise KekaAuthError("Authentication succeeded but access token is empty")
         return self._access_token
 
     async def ensure_token(self) -> str:

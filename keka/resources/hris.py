@@ -3,10 +3,6 @@ from typing import Any, Dict, Optional
 from .base import AsyncBaseResource, BaseResource
 
 
-# =============================================================================
-# PARAMETER BUILDERS
-# =============================================================================
-
 def _build_groups_params(
     group_type_ids: Optional[str] = None,
     system_group_types: Optional[str] = None,
@@ -121,10 +117,6 @@ def _build_exit_reasons_params(
     return {k: v for k, v in params.items() if v is not None}
 
 
-# =============================================================================
-# GROUPS RESOURCE
-# =============================================================================
-
 class GroupsResource(BaseResource):
     """Synchronous Groups resource for organizational group management."""
 
@@ -221,10 +213,6 @@ class AsyncGroupsResource(AsyncBaseResource):
         return await self._paginate("hris/grouptypes", params=params)
 
 
-# =============================================================================
-# DEPARTMENTS RESOURCE
-# =============================================================================
-
 class DepartmentsResource(BaseResource):
     """Synchronous Departments resource."""
 
@@ -280,10 +268,6 @@ class AsyncDepartmentsResource(AsyncBaseResource):
         return await self._paginate(self.endpoint, params=params)
 
 
-# =============================================================================
-# LOCATIONS RESOURCE
-# =============================================================================
-
 class LocationsResource(BaseResource):
     """Synchronous Locations resource."""
 
@@ -333,10 +317,6 @@ class AsyncLocationsResource(AsyncBaseResource):
         )
         return await self._paginate(self.endpoint, params=params)
 
-
-# =============================================================================
-# JOB TITLES RESOURCE
-# =============================================================================
 
 class JobTitlesResource(BaseResource):
     """Synchronous Job Titles resource."""
@@ -393,10 +373,6 @@ class AsyncJobTitlesResource(AsyncBaseResource):
         return await self._paginate(self.endpoint, params=params)
 
 
-# =============================================================================
-# CURRENCY RESOURCE
-# =============================================================================
-
 class CurrencyResource(BaseResource):
     """Synchronous Currency resource."""
 
@@ -441,10 +417,6 @@ class AsyncCurrencyResource(AsyncBaseResource):
         )
         return await self._paginate(self.endpoint, params=params)
 
-
-# =============================================================================
-# NOTICE PERIOD RESOURCE
-# =============================================================================
 
 class NoticePeriodResource(BaseResource):
     """Synchronous Notice Period resource."""
@@ -495,10 +467,6 @@ class AsyncNoticePeriodResource(AsyncBaseResource):
         )
         return await self._paginate(self.endpoint, params=params)
 
-
-# =============================================================================
-# EXIT REASONS RESOURCE
-# =============================================================================
 
 class ExitReasonsResource(BaseResource):
     """Synchronous Exit Reasons resource."""

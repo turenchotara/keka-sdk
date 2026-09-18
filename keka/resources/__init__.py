@@ -1,3 +1,4 @@
+from .attendance import AsyncAttendanceResource, AttendanceResource
 from .base import AsyncBaseResource, BaseResource
 from .helpdesk import AsyncHelpdeskResource, HelpdeskResource
 from .hr import AsyncHRResource, HRResource
@@ -47,4 +48,7 @@ __all__ = [
     # Leave
     "LeaveResource",
     "AsyncLeaveResource",
+    # Attendance
+    "AttendanceResource",
+    "AsyncAttendanceResource",
 ]

@@ -2,7 +2,6 @@
 include README.md
 include LICENSE
 include CHANGELOG.md
-include requirements.txt
 include pyproject.toml
 
 # Include package configuration

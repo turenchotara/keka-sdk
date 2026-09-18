@@ -138,7 +138,8 @@ class Transport(_RetryCore):
 
             if exception is not None:
                 raise KekaError(f"Request to {url} failed: {exception}") from exception
-            assert response is not None
+            if response is None:
+                raise KekaError(f"Request to {url} failed: no response received")
             return response
 
         if last_response is not None:
@@ -226,7 +227,8 @@ class AsyncTransport(_RetryCore):
 
             if exception is not None:
                 raise KekaError(f"Request to {url} failed: {exception}") from exception
-            assert response is not None
+            if response is None:
+                raise KekaError(f"Request to {url} failed: no response received")
             return response
 
         if last_response is not None:
