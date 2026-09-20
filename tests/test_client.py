@@ -2,7 +2,7 @@ import httpx
 import pytest
 import respx
 
-from keka_sdk import (
+from keka import (
     AsyncKekaClient,
     KekaAuth,
     KekaClient,

@@ -2,14 +2,14 @@ import httpx
 import pytest
 import respx
 
-from keka_sdk.config import KekaConfig
-from keka_sdk.exceptions import (
+from keka.config import KekaConfig
+from keka.exceptions import (
     KekaAPIError,
     KekaError,
     KekaNotFoundError,
     KekaRateLimitError,
 )
-from keka_sdk.transport import AsyncTransport, Transport, raise_for_keka_status
+from keka.transport import AsyncTransport, Transport, raise_for_keka_status
 
 BASE = "https://acme.keka.com"
 

@@ -2,10 +2,10 @@ import httpx
 import pytest
 import respx
 
-from keka_sdk.auth import AsyncAuthManager, AuthManager, KekaAuth
-from keka_sdk.config import KekaConfig
-from keka_sdk.exceptions import KekaAuthError
-from keka_sdk.transport import AsyncTransport, Transport
+from keka.auth import AsyncAuthManager, AuthManager, KekaAuth
+from keka.config import KekaConfig
+from keka.exceptions import KekaAuthError
+from keka.transport import AsyncTransport, Transport
 
 BASE = "https://acme.keka.com"
 TOKEN_URL = "https://login.keka.com/connect/token"

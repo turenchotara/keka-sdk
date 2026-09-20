@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from keka_sdk.utils.pagination import PaginatedCursor
+from keka.utils.pagination import PaginatedCursor
 
 
 def _make_mock_client(total_pages=3):

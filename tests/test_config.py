@@ -1,6 +1,6 @@
 import pytest
 
-from keka_sdk.config import KekaConfig, derive_login_url
+from keka.config import KekaConfig, derive_login_url
 
 
 def test_derive_login_url_from_instance():
