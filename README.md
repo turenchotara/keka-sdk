@@ -37,7 +37,7 @@ pip install -e .[dev]
 ### Synchronous
 
 ```python
-from keka_sdk import KekaClient, KekaAuth
+from keka import KekaClient, KekaAuth
 
 auth = KekaAuth(
     client_id="your-client-id",
@@ -65,7 +65,7 @@ with KekaClient(auth, "https://your-company.keka.com") as client:
 
 ```python
 import asyncio
-from keka_sdk import AsyncKekaClient, KekaAuth
+from keka import AsyncKekaClient, KekaAuth
 
 async def main():
     auth = KekaAuth(
@@ -85,7 +85,7 @@ asyncio.run(main())
 Pass a `KekaConfig` instead of a bare URL to tune timeouts and retries:
 
 ```python
-from keka_sdk import KekaClient, KekaConfig, KekaAuth
+from keka import KekaClient, KekaConfig, KekaAuth
 
 config = KekaConfig(
     instance_url="https://your-company.keka.com",
@@ -109,7 +109,7 @@ the `X-API-Key` header. Tokens are acquired lazily and refreshed automatically w
 ## Error Handling
 
 ```python
-from keka_sdk import KekaError, KekaAuthError, KekaRateLimitError, KekaNotFoundError
+from keka import KekaError, KekaAuthError, KekaRateLimitError, KekaNotFoundError
 
 try:
     client.hr.get_employee("emp_123")
@@ -141,8 +141,8 @@ except KekaError as e:
 pip install -e .[dev]
 pre-commit install
 pytest
-mypy keka_sdk
-flake8 keka_sdk
+mypy keka
+flake8 keka
 ```
 
 ## Dependencies

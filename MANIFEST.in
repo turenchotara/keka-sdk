@@ -1,25 +1,21 @@
+
 # Include important documentation and configuration files
 include README.md
 include LICENSE
 include CHANGELOG.md
 include pyproject.toml
 
-# Include package configuration
-include setup.py
-include setup.cfg
-
 # Include type information
-include keka_sdk/py.typed
+include keka/py.typed
 
 # Include all Python files in the package
-recursive-include keka_sdk *.py
-recursive-include keka_sdk *.pyi
+recursive-include keka *.py
+recursive-include keka *.pyi
 
-# Include test files (optional, for source distributions)
+# Include test files (for source distributions)
 recursive-include tests *.py
 
 # Include configuration files
-include .pre-commit-config.yaml
 include .gitignore
 
 # Exclude unnecessary files
