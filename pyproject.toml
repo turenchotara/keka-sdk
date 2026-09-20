@@ -7,7 +7,7 @@ name = "keka-sdk"
 dynamic = ["version"]
 description = "A Python SDK for interacting with the Keka HR API"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "Turen Chotara", email = "turenchotara7@gmail.com"}
 ]
@@ -15,50 +15,48 @@ maintainers = [
     {name = "Turen Chotara", email = "turenchotara7@gmail.com"}
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Office/Business :: Human Resources",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Operating System :: OS Independent",
+"Development Status :: 4 - Beta",
+"Intended Audience :: Developers",
+"Topic :: Software Development :: Libraries :: Python Modules",
+"Programming Language :: Python :: 3",
+"Programming Language :: Python :: 3.8",
+"Programming Language :: Python :: 3.9",
+"Programming Language :: Python :: 3.10",
+"Programming Language :: Python :: 3.11",
+"Programming Language :: Python :: 3.12",
+"Operating System :: OS Independent",
 ]
 keywords = [
-    "keka", 
-    "hr", 
-    "api", 
-    "sdk", 
-    "human-resources", 
-    "payroll", 
-    "employee-management",
-    "helpdesk",
-    "authentication"
+"keka",
+"hr",
+"api",
+"sdk",
+"human-resources",
+"payroll",
+"employee-management",
+"helpdesk",
+"authentication"
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "httpx>=0.24.0"
+"httpx>=0.24.0"
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.0.0",
-    "respx>=0.20.0",
-    "black>=23.0.0",
-    "flake8>=6.0.0",
-    "mypy>=1.0.0",
-    "pre-commit>=3.0.0",
+"pytest>=7.0.0",
+"pytest-asyncio>=0.21.0",
+"pytest-cov>=4.0.0",
+"respx>=0.20.0",
+"black>=23.0.0",
+"flake8>=6.0.0",
+"mypy>=1.0.0",
+"pre-commit>=3.0.0",
 ]
 docs = [
-    "sphinx>=5.0.0",
-    "sphinx-rtd-theme>=1.2.0",
-    "myst-parser>=1.0.0",
+"sphinx>=5.0.0",
+"sphinx-rtd-theme>=1.2.0",
+"myst-parser>=1.0.0",
 ]
 
 [project.urls]
@@ -83,18 +81,20 @@ keka = ["py.typed"]
 [tool.black]
 line-length = 88
 target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
-include = '\.pyi?$'
+include = '.pyi?$'
 extend-exclude = '''
 /(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
+
+# directories
+
+.eggs
+| .git
+| .hg
+| .mypy_cache
+| .tox
+| .venv
+| build
+| dist
 )/
 '''
 
@@ -102,7 +102,7 @@ extend-exclude = '''
 profile = "black"
 multi_line_output = 3
 line_length = 88
-known_first_party = ["keka_sdk"]
+known_first_party = ["keka"]
 
 [tool.mypy]
 python_version = "3.10"
@@ -134,12 +134,12 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["keka_sdk"]
+source = ["keka"]
 branch = true
 omit = [
-    "*/tests/*",
-    "*/test_*",
-    "setup.py",
+"*/tests/*",
+"*/test_*",
+"setup.py",
 ]
 
 [tool.coverage.report]
@@ -147,7 +147,6 @@ exclude_lines = [
     "pragma: no cover",
     "def __repr__",
     "if self.debug:",
-    "if settings.DEBUG",
     "raise AssertionError",
     "raise NotImplementedError",
     "if 0:",
